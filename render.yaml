@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: swasap-erp-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false # paste your Neon connection string here after creating it
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: REFRESH_TOKEN_TTL
+        value: 7d
+      - key: TRIAL_DAYS
+        value: "10"
+      - key: MAX_NON_ADMIN_USERS
+        value: "10"
+      - key: PORT
+        value: "4000"
+      - key: CORS_ORIGIN
+        sync: false # paste your Netlify site URL here, e.g. https://swasap-erp.netlify.app

@@ -1,0 +1,235 @@
+// SWASAP Axle & Shaft Manufacturing ERP - core data model
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PRODUCTION_MANAGER
+  PLANNER
+  QUALITY_CONTROL
+  MACHINE_OPERATOR
+  STORES
+  PROCUREMENT
+  SALES
+  MAINTENANCE
+  DISPATCH
+  FINANCE
+  CUSTOMER_PORTAL
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
+
+enum SerialStatus {
+  IN_PROCESS
+  ON_HOLD
+  REJECTED
+  SCRAPPED
+  DISPATCHED
+  COMPLETE
+}
+
+enum WorkOrderStatus {
+  PLANNED
+  RELEASED
+  IN_PROGRESS
+  COMPLETE
+  CANCELLED
+}
+
+enum InspectionResult {
+  PASS
+  FAIL
+  REWORK
+}
+
+enum NcrStatus {
+  OPEN
+  CORRECTIVE_ACTION
+  CLOSED
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  role             Role      @default(MACHINE_OPERATOR)
+  isPermanentAdmin Boolean   @default(false)
+  active           Boolean   @default(true)
+  trialStartedAt   DateTime?
+  trialExpiresAt   DateTime?
+  licenseStatus    LicenseStatus @default(ACTIVE)
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  lastLoginIp      String?
+  createdAt        DateTime  @default(now())
+
+  workOrdersCreated WorkOrder[]      @relation("WOCreatedBy")
+  processEntries    ProcessHistory[]
+  inspections       Inspection[]
+  auditEntries      AuditLog[]
+}
+
+model Cast {
+  id           String   @id @default(cuid())
+  castNumber   String   @unique
+  heatNumber   String
+  steelGrade   String
+  supplier     String
+  originalWeightKg Float
+  receivedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  serials      Serial[]
+}
+
+model Serial {
+  id            String       @id @default(cuid())
+  serialNumber  String       @unique
+  castId        String
+  cast          Cast         @relation(fields: [castId], references: [id])
+  partNumber    String?
+  customer      String?
+  workOrderId   String?
+  workOrder     WorkOrder?   @relation(fields: [workOrderId], references: [id])
+  status        SerialStatus @default(IN_PROCESS)
+  currentStageId String?
+  currentStage  ProductionStage? @relation(fields: [currentStageId], references: [id])
+  createdAt     DateTime     @default(now())
+
+  processHistory ProcessHistory[]
+  inspections    Inspection[]
+  certificates   Certificate[]
+  dispatch       DispatchItem[]
+}
+
+model ProductionStage {
+  id    String @id @default(cuid())
+  name  String
+  order Int
+
+  serials         Serial[]
+  movementsFrom   ProcessHistory[] @relation("FromStage")
+  movementsTo     ProcessHistory[] @relation("ToStage")
+}
+
+model Machine {
+  id            String   @id @default(cuid())
+  assetNumber   String   @unique
+  name          String
+  type          String
+  runningHours  Float    @default(0)
+  available     Boolean  @default(true)
+  currentJob    String?
+  createdAt     DateTime @default(now())
+
+  downtimeLogs  MachineDowntime[]
+  processEntries ProcessHistory[]
+}
+
+model MachineDowntime {
+  id        String   @id @default(cuid())
+  machineId String
+  machine   Machine  @relation(fields: [machineId], references: [id])
+  reason    String
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+}
+
+model WorkOrder {
+  id            String          @id @default(cuid())
+  number        String          @unique
+  customer      String
+  partNumber    String
+  quantity      Int
+  priority      String          @default("NORMAL")
+  status        WorkOrderStatus @default(PLANNED)
+  targetDate    DateTime?
+  createdById   String
+  createdBy     User            @relation("WOCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime        @default(now())
+
+  serials       Serial[]
+}
+
+model ProcessHistory {
+  id           String   @id @default(cuid())
+  serialId     String
+  serial       Serial   @relation(fields: [serialId], references: [id])
+  fromStageId  String?
+  fromStage    ProductionStage? @relation("FromStage", fields: [fromStageId], references: [id])
+  toStageId    String
+  toStage      ProductionStage  @relation("ToStage", fields: [toStageId], references: [id])
+  machineId    String?
+  machine      Machine? @relation(fields: [machineId], references: [id])
+  operatorId   String
+  operator     User     @relation(fields: [operatorId], references: [id])
+  comments     String?
+  createdAt    DateTime @default(now())
+}
+
+model Inspection {
+  id          String            @id @default(cuid())
+  serialId    String
+  serial      Serial            @relation(fields: [serialId], references: [id])
+  type        String
+  result      InspectionResult
+  inspectorId String
+  inspector   User              @relation(fields: [inspectorId], references: [id])
+  notes       String?
+  createdAt   DateTime          @default(now())
+
+  ncr         Ncr?
+}
+
+model Ncr {
+  id            String    @id @default(cuid())
+  inspectionId  String    @unique
+  inspection    Inspection @relation(fields: [inspectionId], references: [id])
+  status        NcrStatus @default(OPEN)
+  description   String
+  correctiveAction String?
+  createdAt     DateTime  @default(now())
+  closedAt      DateTime?
+}
+
+model Certificate {
+  id         String   @id @default(cuid())
+  serialId   String
+  serial     Serial   @relation(fields: [serialId], references: [id])
+  type       String
+  documentUrl String?
+  createdAt  DateTime @default(now())
+}
+
+model DispatchItem {
+  id          String   @id @default(cuid())
+  serialId    String
+  serial      Serial   @relation(fields: [serialId], references: [id])
+  customer    String
+  dispatchedAt DateTime @default(now())
+  trackingRef String?
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  detail    String?
+  ip        String?
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,16 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "frontend/dist"
+
+# React Router client-side routing: any path Netlify doesn't recognize as a
+# static file falls back to index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# VITE_API_URL must be set in Netlify's dashboard (Site configuration ->
+# Environment variables) to your deployed backend's public URL, e.g.
+# https://swasap-erp-backend.onrender.com - it can't live in this file
+# since it needs to point at wherever you deploy the backend.
