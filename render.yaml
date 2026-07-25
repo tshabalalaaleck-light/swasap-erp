@@ -21,6 +21,7 @@ services:
       - key: MAX_NON_ADMIN_USERS
         value: "10"
       - key: PORT
-        value: "4000"
+        value: "10000"
       - key: CORS_ORIGIN
         sync: false # paste your Netlify site URL here, e.g. https://swasap-erp.netlify.app
+        value: "htps://your-frontend-url.onrender.com"
