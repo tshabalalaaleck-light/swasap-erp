@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "dev-access-secret";
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dev-refresh-secret";
@@ -22,23 +22,11 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
-  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: ACCESS_TTL });
+  const options: SignOptions = { expiresIn: ACCESS_TTL as any };
+  return jwt.sign(payload, ACCESS_SECRET as string, options);
 }
 
 export function signRefreshToken(userId: string): string {
-  return jwt.sign({ sub: userId, type: "refresh" }, REFRESH_SECRET, { expiresIn: REFRESH_TTL });
-}
-
-export function verifyAccessToken(token: string): AccessTokenPayload {
-  return jwt.verify(token, ACCESS_SECRET) as AccessTokenPayload;
-}
-
-export function verifyRefreshToken(token: string): { sub: string } {
-  return jwt.verify(token, REFRESH_SECRET) as { sub: string };
-}
-
-export function generateLicenseKey(): string {
-  const block = () =>
-    Math.random().toString(36).slice(2, 6).toUpperCase().padEnd(4, "X");
-  return `FORG-${block()}-${block()}-${block()}-${block()}`;
+  const options: SignOptions = { expiresIn: REFRESH_TTL as any };
+  return jwt.sign({ sub: userId, type: "refresh" }, REFRESH_SECRET as string, options);
 }
