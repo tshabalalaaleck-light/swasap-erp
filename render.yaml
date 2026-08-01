@@ -23,5 +23,4 @@ services:
       - key: PORT
         value: "10000"
       - key: CORS_ORIGIN
-        sync: false # paste your Netlify site URL here, e.g. https://swasap-erp.netlify.app
         value: "htps://your-frontend-url.onrender.com"
