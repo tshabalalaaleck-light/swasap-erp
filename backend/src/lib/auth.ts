@@ -26,6 +26,14 @@ export function signAccessToken(payload: AccessTokenPayload): string {
   return jwt.sign(payload, ACCESS_SECRET as string, options);
 }
 
+export function verifyAccessToken(token: string): AccessTokenPayload {
+  return jwt.verify(token, ACCESS_SECRET) as AccessTokenPayload;
+}
+
+export function verifyRefreshToken(token: string): { sub: string } {
+  return jwt.verify(token, REFRESH_SECRET) as { sub: string };
+}
+
 export function signRefreshToken(userId: string): string {
   const options: SignOptions = { expiresIn: REFRESH_TTL as any };
   return jwt.sign({ sub: userId, type: "refresh" }, REFRESH_SECRET as string, options);
