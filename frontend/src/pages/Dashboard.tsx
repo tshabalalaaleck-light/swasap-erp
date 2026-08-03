@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, connectRealtime } from "../lib/api";
+import { api, connect } from "../lib/api";
 
 export default function Dashboard() {
   const [me, setMe] = useState<any>(null);
