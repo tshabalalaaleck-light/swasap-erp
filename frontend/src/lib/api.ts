@@ -1,5 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 
+// Vite uses import.meta.env
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export const api = axios.create({
@@ -17,7 +18,7 @@ const getToken = () => {
 // Add token to every request automatically
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getToken();
-  if (token) {
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
