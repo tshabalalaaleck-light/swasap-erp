@@ -10,7 +10,7 @@ export default function Casts() {
   const [cutting, setCutting] = useState<Cutting | null>(null)
 
   useEffect(() => {
-    api.get('/casts').then(res => setCutting(res.data))
+    api.get('/casts').then(res: any) => setCutting(res.data))
   }, [])
 
   return (
