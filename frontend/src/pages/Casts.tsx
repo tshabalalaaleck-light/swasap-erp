@@ -8,10 +8,23 @@ type Cutting = {
 
 export default function Casts() {
   const [cutting, setCutting] = useState<Cutting | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/casts').then(res: any) => setCutting(res.data))
+    const fetchCasts = async () => {
+      try {
+        const res = await api.get('/casts')
+        setCutting(res.data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCasts()
   }, [])
+
+  if (loading) return <p>Loading...</p>
 
   return (
     <div>
