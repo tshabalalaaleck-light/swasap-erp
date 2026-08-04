@@ -3,6 +3,8 @@ import { api } from '../lib/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
+  console.log("VITE_API_URL IS:", import.meta.env.VITE_API_URL) // <-- ADD THIS LINE
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
