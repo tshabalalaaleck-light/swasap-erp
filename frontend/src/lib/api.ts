@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_URL = "https://swasap-erp-backend-q5gw.onrender.com"; // <-- CHANGE LINE 3 TO THIS
+const API_URL = import.meta.env.VITE_API_URL || "https://swasap-erp-backend-q5gw.onrender.com";
 
 export const api = axios.create({
-  baseURL: API_URL, // https://swasap-erp-backend-q5gw.onrender.com
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
